@@ -16,7 +16,7 @@ a = [13, 5, 38, 38, 21, 5, 7, 46, 37, 31, 46, 40, 31, 49, 38, 50, 14, 42, 48, 19
 
 
 import binpackingmodel
-binpackingmodel.solve(m,a,b)
+binpackingmodel.solve(m, a, b)
 
 
 """

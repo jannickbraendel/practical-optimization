@@ -1,5 +1,7 @@
 import networkx as nx
 from gurobipy import *
+
+
 def solve(n, E, s, t):
     G = nx.DiGraph()
     G.add_nodes_from([i for i in range(n)])
@@ -9,13 +11,14 @@ def solve(n, E, s, t):
     shortestpathlength = nx.dijkstra_path_length(G, s, t)
     print(shortestpathlength)
 
+
 def solveGurobi(n, E, s, t):
     model = Model('shortestpath')
     model.params.LogToConsole = True
 
     edge_tuples = tuplelist(E)
 
-    # each edge is apart of shortest path or not
+    # each edge is a part of shortest path or not
     edge_count = len(E)
     vars = model.addVars(edge_count, vtype=GRB.BINARY)
     # path costs should be minimized (shortest path)
@@ -23,20 +26,30 @@ def solveGurobi(n, E, s, t):
 
     # constraints:
     for i in range(n):
-        sum_selected_succ = 0
-        sum_selected_pred = 0
-        for edge in edge_tuples.select(i, '*'):
-            sum_selected_succ += vars[E.index(edge)]
 
-        for edge in edge_tuples.select('*', i):
-            sum_selected_pred += vars[E.index(edge)]
+        sum_selected_succ = quicksum(vars[E.index(edge)] for edge in edge_tuples.select(i, '*'))
+        sum_selected_pred = quicksum(vars[E.index(edge)] for edge in edge_tuples.select('*', i))
 
-        # selected_succ = quicksum(vars[E.index(edge)] for edge in edge_tuples.select(i, '*'))
-        # selected_pred = quicksum(vars[E.index(edge)] for edge in edge_tuples.select('*', i))
+        print(sum_selected_succ, sum_selected_pred)
 
-        val = sum_selected_succ - sum_selected_pred
-        # if i == s:
-            # current node is the source node and should not have predecessors
-            # model.addConstr(sum_selected_succ - sum_selected_pred == 1)
+        # current node is the source node
+        if i == s:
+            model.addLConstr(sum_selected_succ - sum_selected_pred == 1)
 
+        # current node is the target node
+        if i == t:
+            model.addConstr(sum_selected_succ - sum_selected_pred == -1)
 
+        else:
+            # any other node
+            model.addConstr(sum_selected_succ - sum_selected_pred == 0)
+
+    # optimize
+    model.optimize()
+
+    nodes = []
+    for i in range(n):
+        if vars[i].X > 0.5:
+            nodes.append(i)
+        # print(vars[i].X)
+    print(nodes)
