@@ -1,8 +1,38 @@
 from gurobipy import *
 
+
+def aggregate(l, d):
+    lengths = []
+    demands = []
+
+    # Create a dictionary to store aggregated demands
+    aggregated_demands = {}
+
+    # Iterate through the lengths and demands simultaneously
+    for length, demand in zip(l, d):
+        # If the length is already in the dictionary, add the demand to its value
+        if length in aggregated_demands:
+            aggregated_demands[length] += demand
+        # If the length is not in the dictionary, create a new entry
+        else:
+            aggregated_demands[length] = demand
+
+    # Create lists to store the aggregated lengths and demands
+    aggregated_lengths = []
+    aggregated_demands_list = []
+
+    # Iterate through the aggregated dictionary and append values to the lists
+    for length, demand in aggregated_demands.items():
+        lengths.append(length)
+        demands.append(demand)
+    return lengths, demands
+
+
 def solve(m, L, d, l):
     model = Model('cuttingstockmodel')
     model.params.LogToConsole = True
+
+    l, d = aggregate(l, d)
     # amount of orders
     n = len(l)
     # how often order i is cut from roll j

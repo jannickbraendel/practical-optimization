@@ -23,6 +23,6 @@ def solve(m, a, b):
         model.addConstr(quicksum(a[j] * x[j, k] for j in range(n)) <= cMax)
 
     # experiment constraint (accelerated process):
-    model.addConstr(cMax <= 70)
+    # model.addConstr(cMax <= 70)
 
     model.optimize()

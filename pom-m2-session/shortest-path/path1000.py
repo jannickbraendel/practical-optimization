@@ -12,4 +12,4 @@ E = [(0, 12, 30), (0, 54, 34), (0, 73, 60), (0, 125, 27), (0, 144, 57), (0, 172,
 
 
 import shortestpath
-shortestpath.solve(n, E, s, t)
+shortestpath.solveGurobi(n, E, s, t)
