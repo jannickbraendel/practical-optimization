@@ -23,7 +23,7 @@ def solve(m, a, b):
     for j in range(m):
         model.addConstr(quicksum(a[i] * x[i, j] for i in range(n)) <= b * y[j])
 
-    # v3 (variable linking): capacity of bin j (verstehe ich noch nicht 100%)
-    model.addConstrs(x[i, j] <= y[j] for i in range(n) for j in range(m))
+    # v3 (variable linking): capacity of bin j
+    # model.addConstrs(x[i, j] <= y[j] for i in range(n) for j in range(m))
 
     model.optimize()
