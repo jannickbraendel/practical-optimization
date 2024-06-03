@@ -3,7 +3,7 @@ import re
 
 
 # parse standard jss instance (return number of machines m, number of jobs n,
-# tuplelist of operations: [(job, duration, machine)]
+# list of lists of operations: [[(duration, machine)]]
 def parseTaillard(fileName):
     with open(fileName, "r") as file:
         n = 0
@@ -18,9 +18,12 @@ def parseTaillard(fileName):
         m = int(firstLine[1])
 
         for jobIndex in range(n):
+            job_operations = []
             for opIndex in range(m):
                 duration = int(lines[jobIndex + 1].split()[opIndex])
                 # subtract 1 as machine counting starts with 0
                 machine = int(lines[jobIndex + 1 + n].split()[opIndex]) - 1
-                operations.append((jobIndex, duration, machine))
+                job_operations.append((duration, machine))
+                print(job_operations)
+            operations.append(job_operations)
         return n, m, operations

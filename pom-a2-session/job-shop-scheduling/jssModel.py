@@ -5,7 +5,7 @@ import jssLibrary
 
 
 def solve_disjunctive():
-    # tuplelist of operations: [(job, duration, machine)]
+    # list of lists of operations: [[(duration, machine)]]
     n, m, operations = jssLibrary.parseTaillard("abz5.txt")
     model = Model('jss-disjunctive')
     # makespan variable
@@ -26,39 +26,29 @@ def solve_disjunctive():
 
     for jobIndex in range(n):
         # operations of current job
-        job_operations = [(j, duration, machine) for (j, duration, machine) in operations if j == jobIndex]
+        job_operations = operations[jobIndex]
         # total duration determines makespan
-        finalOperation = job_operations[-1]
-        model.addConstr(t[jobIndex, len(job_operations) - 1] + finalOperation[1] <= cMax)
+        model.addConstr(t[jobIndex, len(job_operations) - 1] + job_operations[-1][0] <= cMax)
         # operation precedence constraint (operations of the same job should not overlap)
         for opIndex in range(len(job_operations) - 1):
-            model.addConstr(t[jobIndex, opIndex] + job_operations[opIndex][1] <= t[jobIndex, opIndex+1])
+            model.addConstr(t[jobIndex, opIndex] + job_operations[opIndex][0] <= t[jobIndex, opIndex+1])
 
     # machine constraints (operations should not overlap):
     for machineIndex in range(m):
         for (i, j) in combinations(range(n), 2):
             # job i preceeds job j on machine k
             # get operations from jobs i, j that run on machine k
-            op_i = (0, 0, 0)
-            op_j = (0, 0, 0)
-            for (jobIndex, duration, machine) in operations:
-                if machine != machineIndex:
-                    continue
-                if jobIndex == i:
-                    op_i = (jobIndex, duration, machine)
-                elif jobIndex == j:
-                    op_j = (jobIndex, duration, machine)
+            op_i = [(duration, machine) for (duration, machine) in operations[i] if machine == machineIndex][0]
+            op_j = [(duration, machine) for (duration, machine) in operations[j] if machine == machineIndex][0]
 
-            job_i_ops = [(job, duration, machine) for (job, duration, machine) in operations if job == i]
-            job_j_ops = [(job, duration, machine) for (job, duration, machine) in operations if job == j]
-            io = job_i_ops.index(op_i)
-            jo = job_j_ops.index(op_j)
+            io = operations[i].index(op_i)
+            jo = operations[j].index(op_j)
             # if i preceeds j on k the corresponding x var is set to 1, then T value is not used ( -> constraint is set)
-            model.addConstr(t[i, io] + op_i[1] <=
+            model.addConstr(t[i, io] + op_i[0] <=
                             t[j, jo] + T * (1 - x[machineIndex, i, j]))
-            # print("Machine:", machineIndex, "i:", i, "io:", io, "j:", j, "jo:", jo)
+            print("Machine:", machineIndex, "i:", i, "io:", io, "j:", j, "jo:", jo)
             # if j preceeds i on k the opposite x var is set to 1, then T value is used ( -> constraint is set)
-            model.addConstr(t[j, jo] + op_j[1] <=
+            model.addConstr(t[j, jo] + op_j[0] <=
                             t[j, io] + T * x[machineIndex, i, j])
 
     model.params.LogToConsole = True
