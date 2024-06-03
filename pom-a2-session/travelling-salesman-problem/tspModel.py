@@ -45,12 +45,13 @@ def solve_mtz():
 
 # Dantzig, Fulkerson, Johnson Model
 def solve_dfj():
-    n, nodes, edge_tuples = parse("berlin52.tsp")
+    n, nodes, edge_tuples = parse("pr144.tsp")
+    edge_tuples = tuplelist(filter(lambda x: x[0] < x[1], edge_tuples))
     model = Model('tsp_dfj-model')
     model.params.LogToConsole = True
     # variables x_ij: 1 if edge i-j is used, 0 if not
-    x = model.addVars(n, n, vtype=GRB.CONTINUOUS, name="x")
-    _x = x
+    x = model.addVars(n, n, vtype=GRB.BINARY, name="x")
+    model._x = x
 
     # objective: minimize distance
     model.setObjective(quicksum(x[i, j] * c for (i, j, c) in edge_tuples), GRB.MINIMIZE)
@@ -59,7 +60,7 @@ def solve_dfj():
     for k in range(n):
         sum_predecessors = quicksum(x[i, j] for (i, j, _) in edge_tuples.select('*', k))
         sum_successors = quicksum(x[i, j] for (i, j, _) in edge_tuples.select(k, '*'))
-        model.addConstr(sum_predecessors + sum_successors == 2)
+        model.addConstr(sum_successors + sum_predecessors == 2)
 
     # as graph is undirected: add symmetry to variables (x[i,j] = x[j,i])
     model.addConstrs(x[i, j] == x[j, i] for i in range(n) for j in range(n))
@@ -72,11 +73,10 @@ def solve_dfj():
             G = nx.Graph()
             for (i, j, _) in edge_tuples:
                 weight = max(solution_x[i, j], 0)
-                if weight == 0:
-                    continue
-                print(weight)
+                """if weight == 0:
+                    continue"""
                 G.add_edge(i, j, weight=weight)
-            plotGraph(G)
+            # plotGraph(G)
 
             cut_val, partition = nx.stoer_wagner(G)
             if cut_val < 1.99999:
@@ -87,12 +87,13 @@ def solve_dfj():
 
     model.params.LazyConstraints = 1
     model.optimize(subtour_elim)
+
     # get edges that are part of the tour with optimal length for plotting purpose
     selectedEdges = []
     for (i, j), var in x.items():
         if var.X > 0.9:
             selectedEdges.append((i, j))
-    print(selectedEdges)
+    # print(selectedEdges)
     plotTour(nodes, selectedEdges)
 
 
