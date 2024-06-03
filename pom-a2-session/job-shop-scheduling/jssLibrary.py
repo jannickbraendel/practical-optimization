@@ -18,10 +18,9 @@ def parseTaillard(fileName):
         m = int(firstLine[1])
 
         for jobIndex in range(n):
-            for opIndex in range(n):
+            for opIndex in range(m):
                 duration = int(lines[jobIndex + 1].split()[opIndex])
                 # subtract 1 as machine counting starts with 0
                 machine = int(lines[jobIndex + 1 + n].split()[opIndex]) - 1
                 operations.append((jobIndex, duration, machine))
-
         return n, m, operations

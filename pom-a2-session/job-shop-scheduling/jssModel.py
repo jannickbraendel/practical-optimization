@@ -48,14 +48,15 @@ def solve_disjunctive():
                     op_i = (jobIndex, duration, machine)
                 elif jobIndex == j:
                     op_j = (jobIndex, duration, machine)
-            # if i preceeds j on k the corresponding x var is set to 1, then T value is not used ( -> constraint is set)
+
             job_i_ops = [(job, duration, machine) for (job, duration, machine) in operations if job == i]
             job_j_ops = [(job, duration, machine) for (job, duration, machine) in operations if job == j]
             io = job_i_ops.index(op_i)
             jo = job_j_ops.index(op_j)
+            # if i preceeds j on k the corresponding x var is set to 1, then T value is not used ( -> constraint is set)
             model.addConstr(t[i, io] + op_i[1] <=
                             t[j, jo] + T * (1 - x[machineIndex, i, j]))
-            print("Machine:", machineIndex, "i:", i, "io:", io, "j:", j, "jo:", jo)
+            # print("Machine:", machineIndex, "i:", i, "io:", io, "j:", j, "jo:", jo)
             # if j preceeds i on k the opposite x var is set to 1, then T value is used ( -> constraint is set)
             model.addConstr(t[j, jo] + op_j[1] <=
                             t[j, io] + T * x[machineIndex, i, j])
