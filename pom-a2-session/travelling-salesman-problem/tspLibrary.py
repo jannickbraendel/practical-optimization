@@ -1,6 +1,8 @@
 import math
 import sys
 import re
+
+import networkx as nx
 from gurobipy import tuplelist
 import matplotlib.pyplot as plot
 
@@ -29,10 +31,10 @@ def parse(fileName):
                     continue
                 newEdge = (i, j, round(math.dist(nodes[i], nodes[j])))
                 edge_tuples.append(newEdge)
-        for edge in edge_tuples:
+
+        """for edge in edge_tuples:
             if edge[0] == 0:
-                print(edge)
-        # print(edge_tuples)
+                print(edge)"""
 
         return n, nodes, tuplelist(edge_tuples)
 
@@ -56,4 +58,17 @@ def plotTour(points, edges):
     plot.plot(xPoints, yPoints, marker='o')
 
     plot.show()
+
+
+def plotGraph(G: nx.Graph):
+    pos = nx.spring_layout(G)  # positions for all nodes
+
+    nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=300, font_size=10)
+    # Step 3: Get edge labels (weights) and draw them
+    edge_labels = nx.get_edge_attributes(G, 'weight')
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+
+    # Display the graph
+    plot.show()
+
 
