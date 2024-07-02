@@ -16,9 +16,8 @@ def solve_disjunctive():
     x_keys = [(k, i, j) for k in range(m) for (i, j) in combinations(range(n), 2)]
     x = model.addVars(x_keys, vtype=GRB.BINARY)
 
-    # big number T for "big M" constraints
-    T = 3000
-
+    # big number T for "big M" constraints (sum of all durations)
+    T = sum([duration for i in range(n) for (duration, _) in operations[i]])
     # objective: (here) minimize makespan duration
     model.setObjective(cMax, GRB.MINIMIZE)
 
@@ -44,12 +43,9 @@ def solve_disjunctive():
             io = operations[i].index(op_i)
             jo = operations[j].index(op_j)
             # if i preceeds j on k the corresponding x var is set to 1, then T value is not used ( -> constraint is set)
-            model.addConstr(t[i, io] + op_i[0] <=
-                            t[j, jo] + T * (1 - x[machineIndex, i, j]))
-            print("Machine:", machineIndex, "i:", i, "io:", io, "j:", j, "jo:", jo)
+            model.addConstr(t[i, io] + op_i[0] <= t[j, jo] + T * (1 - x[machineIndex, i, j]))
             # if j preceeds i on k the opposite x var is set to 1, then T value is used ( -> constraint is set)
-            model.addConstr(t[j, jo] + op_j[0] <=
-                            t[j, io] + T * x[machineIndex, i, j])
+            model.addConstr(t[j, jo] + op_j[0] <= t[i, io] + T * x[machineIndex, i, j])
 
     model.params.LogToConsole = True
     model.optimize()
